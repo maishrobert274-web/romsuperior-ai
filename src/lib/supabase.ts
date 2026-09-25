@@ -11,16 +11,15 @@ export async function getCurrentUser() {
   return data.user;
 }
 
+export async function getAccessToken() {
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token || null;
+}
+
 export async function signInWithPassword(email: string, password: string) {
   if (!supabase) throw new Error('Supabase is not configured yet.');
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
-  return data.user;
-}
-
-export async function signUpWithPassword(email: string, password: string) {
-  if (!supabase) throw new Error('Supabase is not configured yet.');
-  const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;
   return data.user;
 }
