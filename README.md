@@ -1,34 +1,58 @@
 # romsuperior ai
 
-Portable source snapshot prepared for migration away from AppDeploy.
+Portable source for the romsuperior ai service, being migrated away from AppDeploy.
 
-## Current status
+## Migration status
 
-This repository contains the current romsuperior ai frontend and backend source as a migration baseline. The AppDeploy-specific adapters are intentionally preserved in this first snapshot so the working app remains reproducible while we replace them in the next migration step.
+**Step 2 complete:** the application source no longer imports `@appdeploy/client` or `@appdeploy/sdk`.
 
-## Features in the current baseline
+The independent stack is now:
 
-- AI chat with FAST/DEEP reasoning modes
-- bounded Agent mode with public web-page browsing
-- web research mode
+- React + Vite frontend
+- Vercel-compatible serverless API
+- Supabase Auth + Postgres for accounts and cloud chat history
+- Gemini API for chat, multimodal analysis, research/agent workflows, and image generation
+
+AppDeploy remains untouched as the backup until the independent deployment is tested.
+
+## Features carried forward
+
+- AI chat with FAST/DEEP modes
+- vision/image attachments
+- bounded web research and Agent mode
 - image generation
-- image vision/file workflows
 - voice input and speech output
 - local chat history
 - authenticated cloud chat history
-- separate Manager console
+- separate Manager planned as its own service
 
-## Migration rules
+## Required environment variables
 
-- Never commit API keys, passwords, owner secrets, OAuth secrets, or `.env` files.
-- AppDeploy remains the backup deployment until the independent deployment is verified.
-- Next step: replace `@appdeploy/client` and `@appdeploy/sdk` with portable HTTP/auth/database adapters.
+Copy `.env.example` into your deployment settings. Never commit real secrets.
 
-## Run the frontend
+Frontend:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Server:
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `GEMINI_API_KEY`
+- `GEMINI_FAST_MODEL`
+- `GEMINI_DEEP_MODEL`
+- `GEMINI_IMAGE_MODEL`
+
+## Supabase setup
+
+Run `supabase/schema.sql` in the Supabase SQL editor to create the protected chat table and Row Level Security policies.
+
+## Local development
 
 ```bash
 npm install
 npm run dev
 ```
 
-The current source is a migration baseline, not yet the final AppDeploy-free build.
+## Deployment
+
+The repository includes `vercel.json` for a Vercel deployment. Supabase can remain on its Free plan for small projects; Gemini has a free API tier for supported models, subject to quotas and model availability.
