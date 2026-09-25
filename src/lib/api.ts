@@ -1,10 +1,12 @@
-import { getCurrentUser, signInWithPassword, signOut as supabaseSignOut } from './supabase';
+import { getAccessToken, getCurrentUser, signInWithPassword, signOut as supabaseSignOut } from './supabase';
 
 type ApiResult<T = unknown> = { data: T };
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<ApiResult<T>> {
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'application/json');
+  const token = await getAccessToken();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
   const response = await fetch(path, { ...init, headers });
   const raw = await response.text();
   let data: any = {};
@@ -46,7 +48,10 @@ export const image = {
     canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.88));
     if (!blob) throw new Error('Could not prepare image.');
-    const data = btoa(String.fromCharCode(...new Uint8Array(await blob.arrayBuffer())));
-    return { data, mimeType: 'image/jpeg' };
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+    return { data: btoa(binary), mimeType: 'image/jpeg' };
   },
 };
